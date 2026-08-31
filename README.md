@@ -21,7 +21,6 @@ Plan your week, focus with a Pomodoro timer, stay gently accountable, and reflec
 
 ## 📸 Screenshots
 
-> Drop your images into `docs/screenshots/` and they'll render here.
 
 | Today | Calendar | Focus |
 | --- | --- | --- |
