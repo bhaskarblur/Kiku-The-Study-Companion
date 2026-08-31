@@ -2,6 +2,7 @@
 <div align="center">
 
 <img src="Kiku/Resources/Assets.xcassets/AppIcon.appiconset/icon_256.png" width="128" alt="Kiku icon" />
+
 # 🎐 Kiku: Your Study Companion
 
 **A calm, cute-but-professional study companion for macOS.**
