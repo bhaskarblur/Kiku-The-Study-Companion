@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Kiku app logo</title>
+  <defs>
+    <linearGradient id="kGradient" x1="512" y1="300" x2="512" y2="716" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9A8BF5"/>
+      <stop offset="1" stop-color="#5E4CDB"/>
+    </linearGradient>
+  </defs>
+
+  <!-- White squircle tile -->
+  <rect x="0" y="0" width="1024" height="1024" rx="230" ry="230" fill="#FFFFFF"/>
+  <rect x="2" y="2" width="1020" height="1020" rx="228" ry="228" fill="none" stroke="#000000" stroke-opacity="0.06" stroke-width="4"/>
+
+  <!-- Cute geometric "K" monogram, rounded caps -->
+  <g stroke="url(#kGradient)" stroke-linecap="round" fill="none">
+    <line x1="430" y1="312" x2="430" y2="712" stroke-width="98"/>
+    <line x1="474" y1="512" x2="686" y2="312" stroke-width="90"/>
+    <line x1="474" y1="512" x2="712" y2="712" stroke-width="90"/>
+  </g>
+
+  <!-- Sparkles for a little joy -->
+  <path d="M772 258 L787.5 306.5 L836 322 L787.5 337.5 L772 386 L756.5 337.5 L708 322 L756.5 306.5 Z" fill="#C9BFFB"/>
+  <path d="M712 696 L719 718.9 L742 726 L719 733.1 L712 756 L705 733.1 L682 726 L705 718.9 Z" fill="#C9BFFB"/>
+</svg>

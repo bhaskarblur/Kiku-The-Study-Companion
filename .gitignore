@@ -1,0 +1,11 @@
+# Xcode / build artifacts
+Kiku.xcodeproj/
+build/
+dist/
+DerivedData/
+*.xcuserstate
+.DS_Store
+
+# Secrets — never commit your API keys
+Config/Secrets.local.xcconfig
+Config/Secrets.xcconfig

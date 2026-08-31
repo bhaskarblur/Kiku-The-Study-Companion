@@ -1,0 +1,18 @@
+// Kiku base build configuration.
+//
+// The weekly AI recap uses the Gemini API. The key is NOT stored in the repo.
+// Provide it one of two ways:
+//
+//   1) Recommended for .dmg builds — pass it via the environment:
+//        GEMINI_API_KEY=your_key ./scripts/build_dmg.sh
+//
+//   2) For local Xcode (GUI) builds — create an untracked file
+//      Config/Secrets.local.xcconfig containing:
+//        GEMINI_API_KEY = your_key
+//
+// Get a free key: https://aistudio.google.com/app/apikey
+// Default is empty; the optional include below is used only if the file exists.
+
+GEMINI_API_KEY =
+
+#include? "Secrets.local.xcconfig"
