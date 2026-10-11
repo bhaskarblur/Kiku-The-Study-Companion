@@ -264,3 +264,67 @@ struct KSegmentedControl<T: Hashable>: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
     }
 }
+
+// MARK: - Flow layout
+
+/// Lays out subviews left-to-right, wrapping onto new lines as available width runs out —
+/// unlike HStack (one line, overflows) or LazyVGrid (forces equal-width columns).
+struct FlowLayout: Layout {
+    var spacing: CGFloat = Theme.Spacing.sm
+    var lineSpacing: CGFloat = Theme.Spacing.sm
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        let rows = rows(for: subviews, maxWidth: maxWidth)
+        let height = rows.reduce(0) { $0 + $1.height } + CGFloat(max(0, rows.count - 1)) * lineSpacing
+        let width = rows.map(\.width).max() ?? 0
+        return CGSize(width: proposal.width ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let rows = rows(for: subviews, maxWidth: bounds.width)
+        var y = bounds.minY
+        var index = 0
+        for row in rows {
+            var x = bounds.minX
+            for _ in row.indices {
+                let subview = subviews[index]
+                let size = subview.sizeThatFits(.unspecified)
+                subview.place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: .unspecified)
+                x += size.width + spacing
+                index += 1
+            }
+            y += row.height + lineSpacing
+        }
+    }
+
+    private struct Row {
+        var indices: [Int]
+        var width: CGFloat
+        var height: CGFloat
+    }
+
+    private func rows(for subviews: Subviews, maxWidth: CGFloat) -> [Row] {
+        var rows: [Row] = []
+        var current: [Int] = []
+        var currentWidth: CGFloat = 0
+        var currentHeight: CGFloat = 0
+
+        for (index, subview) in subviews.enumerated() {
+            let size = subview.sizeThatFits(.unspecified)
+            if !current.isEmpty, currentWidth + spacing + size.width > maxWidth {
+                rows.append(Row(indices: current, width: currentWidth, height: currentHeight))
+                current = []
+                currentWidth = 0
+                currentHeight = 0
+            }
+            currentWidth += (current.isEmpty ? 0 : spacing) + size.width
+            currentHeight = max(currentHeight, size.height)
+            current.append(index)
+        }
+        if !current.isEmpty {
+            rows.append(Row(indices: current, width: currentWidth, height: currentHeight))
+        }
+        return rows
+    }
+}

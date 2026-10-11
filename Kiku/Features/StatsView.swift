@@ -12,6 +12,9 @@ struct StatsView: View {
     @State private var recapLoading = false
     @State private var recapError: String?
 
+    /// Keeps the weekly-minutes ring and the two metric cards the same height.
+    private static let statCardMinHeight: CGFloat = 120
+
     private var daily: [(date: Date, minutes: Int)] {
         StudyStats.dailyMinutes(sessions, days: range)
     }
@@ -118,7 +121,7 @@ struct StatsView: View {
                 Text("\(value)/\(target)\(unit)").font(.kNumber(14)).foregroundStyle(Theme.Palette.textPrimary)
                 Text(title).font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: Self.statCardMinHeight)
         }
     }
 
@@ -130,7 +133,7 @@ struct StatsView: View {
                 Text(label).font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
                     .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: Self.statCardMinHeight)
         }
     }
 

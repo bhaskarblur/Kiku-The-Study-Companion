@@ -57,7 +57,7 @@ struct SessionLogSheet: View {
                     .background(Theme.Palette.surfaceAlt)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
 
-                Text("HOW DID IT FEEL?").font(.system(size: 10, weight: .semibold))
+                Text("HOW WAS YOUR SESSION?").font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 HStack(spacing: Theme.Spacing.sm) {
                     ForEach(1...5, id: \.self) { i in

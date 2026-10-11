@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import UserNotifications
 
 /// First-run onboarding that warmly guides the user through the permissions Kiku
@@ -7,6 +8,7 @@ struct WelcomeSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var settings: SettingsStore
     @ObservedObject private var sync = CalendarSyncService.shared
+    @Query private var events: [StudyEvent]
 
     @State private var notifStatus: UNAuthorizationStatus = .notDetermined
     @State private var page = 0
@@ -94,6 +96,10 @@ struct WelcomeSheet: View {
                         Task {
                             let granted = await sync.requestAccess()
                             settings.calendarSyncEnabled = granted
+                            if granted {
+                                let calendarID = settings.calendarSyncID.isEmpty ? nil : settings.calendarSyncID
+                                sync.mirrorAll(events, toCalendarID: calendarID)
+                            }
                         }
                     }
                     Button {

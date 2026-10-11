@@ -37,6 +37,8 @@ final class FocusTimer: ObservableObject {
 
     /// Set when a session ends (naturally or via Finish) so the UI can prompt a log.
     @Published var pendingLog: PendingLog? = nil
+    /// True when `pendingLog` came from a manual Stop — no break should auto-start after.
+    private(set) var pendingLogIsManualStop = false
 
     /// Number of focus sessions completed (used to decide short vs long break).
     private(set) var completedFocusSessions = 0
@@ -118,18 +120,37 @@ final class FocusTimer: ObservableObject {
         persist()
     }
 
-    func stop() { resetToIdle() }
+    /// Stops the current phase early. A focus session with meaningful time on the clock
+    /// still gets logged (to stats/journal) — it just doesn't roll into a break after.
+    func stop() {
+        guard isActive else { return }
+        guard kind == .focus, total - remaining >= 60 else {
+            resetToIdle()
+            return
+        }
+        timer?.cancel()
+        timer = nil
+        phase = .finished
+        pendingLogIsManualStop = true
+        queueLog()
+        remaining = 0
+    }
+
+    /// Returns to idle after a manually-stopped session's log sheet is dismissed.
+    func acknowledgeManualStop() {
+        resetToIdle()
+    }
 
     /// Ends the current phase early. Focus → prompts a log for time done; break → back to idle.
     func finishNow() {
         guard isActive else { return }
         timer?.cancel()
         timer = nil
-        remaining = 0
         switch kind {
         case .focus:
             phase = .finished
             queueLog()
+            remaining = 0
         case .breakTime:
             resetToIdle()
         }
@@ -193,6 +214,7 @@ final class FocusTimer: ObservableObject {
         linkedEventID = nil
         subjectName = nil
         pendingLog = nil
+        pendingLogIsManualStop = false
         clearPersisted()
     }
 

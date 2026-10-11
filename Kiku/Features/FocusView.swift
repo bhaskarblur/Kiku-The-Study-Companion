@@ -5,12 +5,22 @@ struct FocusView: View {
     @EnvironmentObject private var settings: SettingsStore
     @EnvironmentObject private var focusTimer: FocusTimer
     @Query(sort: \Subject.createdAt) private var subjects: [Subject]
+    @Query(sort: \StudyEvent.start) private var events: [StudyEvent]
 
     @State private var selectedSubject: Subject?
+    /// The calendar occurrence we've already auto-applied defaults from, so we don't
+    /// keep overwriting manual adjustments on every re-check.
+    @State private var appliedOccurrenceID: String?
+    private let smartSuggestionTicker = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private var ringColor: Color {
         if focusTimer.isBreak { return Theme.Palette.success }
         return focusTimer.isActive ? Color(hex: focusTimer.subjectColorHex) : Theme.Palette.accent
+    }
+
+    /// The calendar block covering right now, if any.
+    private var currentOccurrence: EventOccurrence? {
+        RecurrenceEngine.occurrences(of: events, on: .now).first { $0.start <= .now && $0.end > .now }
     }
 
     var body: some View {
@@ -28,7 +38,7 @@ struct FocusView: View {
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .tracking(1.5)
             } else {
-                Text("READY TO FOCUS")
+                Text("READY TO FOCUS AND START WORKING ON THE TASK")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .tracking(1.5)
@@ -48,6 +58,13 @@ struct FocusView: View {
             }
             .animation(Theme.Motion.spring, value: focusTimer.phase)
 
+            if focusTimer.phase == .idle { focusMinutesStepper }
+
+            if focusTimer.phase == .idle, let occ = currentOccurrence, occ.id == appliedOccurrenceID {
+                Label("Auto-set from “\(occ.title)” on your calendar", systemImage: "calendar")
+                    .font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
+            }
+
             controls
 
             if focusTimer.phase == .idle { subjectPicker }
@@ -56,7 +73,57 @@ struct FocusView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(Theme.Spacing.xxl)
-        .onAppear { if selectedSubject == nil { selectedSubject = subjects.first } }
+        .onAppear {
+            if selectedSubject == nil { selectedSubject = subjects.first }
+            applySmartDefaultsIfNeeded()
+        }
+        .onReceive(smartSuggestionTicker) { _ in applySmartDefaultsIfNeeded() }
+    }
+
+    /// Prefills the focus length and subject from the calendar block running right now —
+    /// only once per occurrence, so it never clobbers a manual tweak mid-block.
+    private func applySmartDefaultsIfNeeded() {
+        guard focusTimer.phase == .idle, let occ = currentOccurrence, occ.id != appliedOccurrenceID else { return }
+        if occ.durationMinutes > 0 {
+            settings.focusMinutes = min(Self.focusMinutesRange.upperBound,
+                                        max(Self.focusMinutesRange.lowerBound, occ.durationMinutes))
+        }
+        if let subject = occ.subject { selectedSubject = subject }
+        appliedOccurrenceID = occ.id
+    }
+
+    private static let focusMinutesRange = 5...180
+    private static let focusMinutesStep = 5
+
+    private var focusMinutesStepper: some View {
+        HStack(spacing: Theme.Spacing.lg) {
+            stepperButton(icon: "minus") { adjustFocusMinutes(by: -Self.focusMinutesStep) }
+                .disabled(settings.focusMinutes <= Self.focusMinutesRange.lowerBound)
+            VStack(spacing: 1) {
+                Text("\(settings.focusMinutes) min").font(.kHeadline).foregroundStyle(Theme.Palette.textPrimary)
+                Text("Focus length").font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
+            }
+            .frame(minWidth: 96)
+            stepperButton(icon: "plus") { adjustFocusMinutes(by: Self.focusMinutesStep) }
+                .disabled(settings.focusMinutes >= Self.focusMinutesRange.upperBound)
+        }
+    }
+
+    private func stepperButton(icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.Palette.textPrimary)
+                .frame(width: 32, height: 32)
+                .background(Theme.Palette.surfaceAlt)
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func adjustFocusMinutes(by delta: Int) {
+        let next = settings.focusMinutes + delta
+        settings.focusMinutes = min(Self.focusMinutesRange.upperBound, max(Self.focusMinutesRange.lowerBound, next))
     }
 
     private var phaseLabel: String {
@@ -91,9 +158,11 @@ struct FocusView: View {
                 switch focusTimer.phase {
                 case .idle:
                     KPrimaryButton(title: "Start focus", icon: "play.fill") {
+                        let linkedOccurrence = currentOccurrence?.id == appliedOccurrenceID ? currentOccurrence : nil
                         focusTimer.start(minutes: settings.focusMinutes,
                                          subjectName: selectedSubject?.name,
-                                         colorHex: selectedSubject?.colorHex ?? Theme.subjectColors[0])
+                                         colorHex: selectedSubject?.colorHex ?? Theme.subjectColors[0],
+                                         eventID: linkedOccurrence?.event.id)
                     }
                 case .running:
                     KSecondaryButton(title: "Pause", icon: "pause.fill") { focusTimer.pause() }
@@ -111,7 +180,7 @@ struct FocusView: View {
     private var subjectPicker: some View {
         VStack(spacing: Theme.Spacing.sm) {
             Text("What are you studying?").font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
-            HStack(spacing: Theme.Spacing.sm) {
+            FlowLayout(spacing: Theme.Spacing.sm, lineSpacing: Theme.Spacing.sm) {
                 ForEach(subjects) { s in
                     let selected = selectedSubject?.id == s.id
                     Button { selectedSubject = s } label: {
@@ -126,6 +195,7 @@ struct FocusView: View {
                     }.buttonStyle(.plain)
                 }
             }
+            .frame(maxWidth: 640)
         }
     }
 }

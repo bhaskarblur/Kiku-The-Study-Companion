@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @ObservedObject private var sync = CalendarSyncService.shared
     @Query(sort: \Subject.createdAt) private var subjects: [Subject]
+    @Query private var events: [StudyEvent]
 
     @State private var notifStatus: UNAuthorizationStatus = .notDetermined
     @State private var editingSubject: Subject?
@@ -174,6 +175,7 @@ struct SettingsView: View {
                             Task {
                                 let granted = await sync.requestAccess()
                                 settings.calendarSyncEnabled = granted
+                                if granted { backfillCalendarSync() }
                             }
                         } else {
                             settings.calendarSyncEnabled = false
@@ -189,6 +191,7 @@ struct SettingsView: View {
                             Text(cal.title).tag(cal.calendarIdentifier)
                         }
                     }.labelsHidden().pickerStyle(.menu).frame(width: 220)
+                        .onChange(of: settings.calendarSyncID) { _, _ in backfillCalendarSync() }
                 }
                 Label("Connected! Study blocks now appear on any device signed into this calendar.",
                       systemImage: "checkmark.seal.fill")
@@ -201,6 +204,13 @@ struct SettingsView: View {
             Divider().overlay(Theme.Palette.border)
             googleSetupGuide
         }
+    }
+
+    /// Pushes every existing study block to the target calendar — needed because events
+    /// created before sync was enabled (or before the target calendar changed) were never mirrored.
+    private func backfillCalendarSync() {
+        let calendarID = settings.calendarSyncID.isEmpty ? nil : settings.calendarSyncID
+        sync.mirrorAll(events, toCalendarID: calendarID)
     }
 
     private var calendarDeniedHelp: some View {

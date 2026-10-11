@@ -93,10 +93,20 @@ struct RootView: View {
         }
         .animation(Theme.Motion.spring, value: presencePrompt?.id)
         .onReceive(presenceTicker) { _ in evaluatePresenceCheck() }
-        .sheet(item: $focusTimer.pendingLog, onDismiss: { startBreakAfterFocus() }) { log in
+        .sheet(item: $focusTimer.pendingLog, onDismiss: { handlePendingLogDismiss() }) { log in
             SessionLogSheet(focusMinutes: log.minutes,
                             suggestedSubject: linkedEvent(for: log)?.subject,
                             linkedEvent: linkedEvent(for: log))
+        }
+    }
+
+    /// After a focus session's log sheet is dismissed: roll into a break if it completed
+    /// naturally or was finished early, but not if the user manually stopped it.
+    private func handlePendingLogDismiss() {
+        if focusTimer.pendingLogIsManualStop {
+            focusTimer.acknowledgeManualStop()
+        } else {
+            startBreakAfterFocus()
         }
     }
 

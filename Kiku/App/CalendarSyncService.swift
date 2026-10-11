@@ -85,6 +85,17 @@ final class CalendarSyncService: ObservableObject {
         try? store.remove(ekEvent, span: .futureEvents)
     }
 
+    /// Pushes every event into the target calendar — used to backfill events that existed
+    /// before sync was turned on, or to move everything after the target calendar changes.
+    func mirrorAll(_ events: [StudyEvent], toCalendarID calendarID: String?) {
+        guard authorized else { return }
+        for event in events {
+            if let id = mirror(event, toCalendarID: calendarID) {
+                event.ekIdentifier = id
+            }
+        }
+    }
+
     private func recurrenceRules(for recurrence: Recurrence) -> [EKRecurrenceRule]? {
         switch recurrence {
         case .none:
