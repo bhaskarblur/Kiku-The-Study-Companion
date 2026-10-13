@@ -327,11 +327,11 @@ private struct TimelineRow: View {
             }
             Spacer()
             if occurrence.wasSkipped {
-                Text("skipped").font(.kCaption).foregroundStyle(Theme.Palette.warning)
-                    .padding(.horizontal, Theme.Spacing.sm).padding(.vertical, 3)
+                Text("skipped").font(.kBody).foregroundStyle(Theme.Palette.warning)
+                    .padding(.horizontal, Theme.Spacing.md).padding(.vertical, Theme.Spacing.xs)
                     .background(Theme.Palette.warning.opacity(0.14)).clipShape(Capsule())
             } else if occurrence.isCompleted {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.Palette.success)
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.Palette.success)
             } else if hovering {
                 Button(action: onStart) {
                     Image(systemName: "play.circle.fill").font(.system(size: 20)).foregroundStyle(Theme.Palette.accent)

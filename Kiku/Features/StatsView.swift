@@ -13,7 +13,7 @@ struct StatsView: View {
     @State private var recapError: String?
 
     /// Keeps the weekly-minutes ring and the two metric cards the same height.
-    private static let statCardMinHeight: CGFloat = 120
+    private static let statCardMinHeight: CGFloat = 130
 
     private var daily: [(date: Date, minutes: Int)] {
         StudyStats.dailyMinutes(sessions, days: range)
@@ -116,10 +116,10 @@ struct StatsView: View {
             VStack(spacing: Theme.Spacing.sm) {
                 ZStack {
                     ProgressRing(progress: progress, lineWidth: 9, tint: tint).frame(width: 64, height: 64)
-                    Text("\(Int(progress * 100))%").font(.kNumber(13)).foregroundStyle(Theme.Palette.textPrimary)
+                    Text("\(Int(progress * 100))%").font(.kNumber(15)).foregroundStyle(Theme.Palette.textPrimary)
                 }
-                Text("\(value)/\(target)\(unit)").font(.kNumber(14)).foregroundStyle(Theme.Palette.textPrimary)
-                Text(title).font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
+                Text("\(value)/\(target)\(unit)").font(.kNumber(17)).foregroundStyle(Theme.Palette.textPrimary)
+                Text(title).font(.kBody).foregroundStyle(Theme.Palette.textSecondary)
             }
             .frame(maxWidth: .infinity, minHeight: Self.statCardMinHeight)
         }
@@ -129,8 +129,8 @@ struct StatsView: View {
         KCard {
             VStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: icon).font(.system(size: 22)).foregroundStyle(tint)
-                Text(value).font(.kNumber(22, weight: .bold)).foregroundStyle(Theme.Palette.textPrimary)
-                Text(label).font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
+                Text(value).font(.kNumber(26, weight: .bold)).foregroundStyle(Theme.Palette.textPrimary)
+                Text(label).font(.kBody).foregroundStyle(Theme.Palette.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity, minHeight: Self.statCardMinHeight)
@@ -189,10 +189,10 @@ struct StatsView: View {
     }
 
     private func recapPill(_ emoji: String, _ value: String, _ label: String) -> some View {
-        VStack(spacing: 1) {
-            Text(emoji).font(.system(size: 15))
-            Text(value).font(.kNumber(14)).foregroundStyle(Theme.Palette.textPrimary)
-            Text(label).font(.system(size: 10)).foregroundStyle(Theme.Palette.textSecondary)
+        VStack(spacing: 2) {
+            Text(emoji).font(.system(size: 18))
+            Text(value).font(.kNumber(17)).foregroundStyle(Theme.Palette.textPrimary)
+            Text(label).font(.kCaption).foregroundStyle(Theme.Palette.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Theme.Spacing.sm)

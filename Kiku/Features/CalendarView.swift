@@ -115,7 +115,7 @@ private struct CreateDate: Identifiable { let id = UUID(); let date: Date }
 // MARK: - Hour grid shared geometry
 
 private enum Grid {
-    static let hourHeight: CGFloat = 52
+    static let hourHeight: CGFloat = 68
     static let startHour = 6
     static let endHour = 24
 
@@ -148,6 +148,7 @@ private struct DayGrid: View {
                     ForEach(occurrences) { occ in
                         EventBlock(occurrence: occ, onMoved: { onMove(occ.event, $0) }) { onEdit(occ.event) }
                             .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.vertical, 2)
                             .offset(y: Grid.y(for: occ.start))
                             .frame(height: blockHeight(occ), alignment: .top)
                     }
@@ -186,7 +187,7 @@ private struct DayGrid: View {
     }
 
     private func blockHeight(_ o: EventOccurrence) -> CGFloat {
-        max(24, CGFloat(o.durationMinutes) / 60 * Grid.hourHeight)
+        max(30, CGFloat(o.durationMinutes) / 60 * Grid.hourHeight)
     }
 
     private func hourLabel(_ h: Int) -> String {
@@ -273,8 +274,9 @@ private struct WeekGrid: View {
             ForEach(dayOccurrences) { occ in
                 EventBlock(occurrence: occ, compact: true, onMoved: { onMove(occ.event, $0) }) { onEdit(occ.event) }
                     .padding(.horizontal, 3)
+                    .padding(.vertical, 1.5)
                     .offset(y: Grid.y(for: occ.start))
-                    .frame(height: max(20, CGFloat(occ.durationMinutes) / 60 * Grid.hourHeight), alignment: .top)
+                    .frame(height: max(26, CGFloat(occ.durationMinutes) / 60 * Grid.hourHeight), alignment: .top)
             }
             if Calendar.current.isDateInToday(day) {
                 Rectangle().fill(Theme.Palette.warning).frame(height: 2).offset(y: Grid.y(for: .now))
@@ -372,18 +374,18 @@ private struct EventBlock: View {
                 HStack(spacing: 3) {
                     if let subject = occurrence.subject {
                         Image(systemName: subject.icon)
-                            .font(.system(size: compact ? 9 : 11))
+                            .font(.system(size: compact ? 11 : 13))
                             .foregroundStyle(Color(hex: occurrence.colorHex))
                     }
-                    Text(occurrence.title).font(.system(size: compact ? 11 : 13, weight: .semibold))
+                    Text(occurrence.title).font(.system(size: compact ? 13 : 15, weight: .semibold))
                         .foregroundStyle(Theme.Palette.textPrimary).lineLimit(1)
                 }
                 Text(timeRange)
-                    .font(.system(size: compact ? 9 : 11))
+                    .font(.system(size: compact ? 11 : 13))
                     .foregroundStyle(Theme.Palette.textSecondary).lineLimit(1)
                 if !occurrence.notes.isEmpty {
                     Text(occurrence.notes)
-                        .font(.system(size: compact ? 9 : 11))
+                        .font(.system(size: compact ? 11 : 13))
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .lineLimit(compact ? 1 : 2)
                 }
@@ -399,8 +401,8 @@ private struct EventBlock: View {
             .overlay(alignment: .topTrailing) {
                 if occurrence.isCompleted {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 10)).foregroundStyle(Theme.Palette.success)
-                        .padding(3)
+                        .font(.system(size: 16)).foregroundStyle(Theme.Palette.success)
+                        .padding(4)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
